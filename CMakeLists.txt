@@ -15,4 +15,4 @@ add_executable(mbroker
         mbroker/mbroker.c
         utils/betterassert.h
         utils/logging.c
-        utils/logging.h)
+        utils/logging.h mbroker/default_sizes.h)

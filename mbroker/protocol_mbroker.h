@@ -1,0 +1,8 @@
+#ifndef PROJETO_SO_2_PROTOCOL_MBROKER_H
+#define PROJETO_SO_2_PROTOCOL_MBROKER_H
+
+void parse_requests();
+
+char*
+
+#endif //PROJETO_SO_2_PROTOCOL_MBROKER_H

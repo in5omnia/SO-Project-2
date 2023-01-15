@@ -4,7 +4,7 @@
 
 #include "protocol_mbroker.h"
 #include "box_list.h"
-#include "../manager/protocol_manager.h" // INTERNAL FIXME SHOULDN'T BE HERE
+#include "../protocol/protocol.h" // INTERNAL FIXME SHOULDN'T BE HERE
 
 #define BOX_ALREADY_EXISTS_ERROR "Box already exists"
 #define BOX_CREATION_ERROR "Box creation error"

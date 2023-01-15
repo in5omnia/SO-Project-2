@@ -6,6 +6,7 @@
 #include <sys/errno.h>
 #include <sys/fcntl.h>
 #include "fifo.h"
+#include <signal.h>
 
 char client_pipe_name[MAX_CLIENTPIPE_NAME];
 int num_messages = 0;
@@ -51,7 +52,7 @@ int receive_messages(int fifo){
 
 
 
-int read_input(char *buffer, char *client_pipe_name, char *box_name) {
+int read_input(char *buffer, char *client_pipe_namepath, char *box_name) {
 	char input[MAX_INPUT_SIZE];
 	char assert[MAX_INPUT_SIZE];
 	if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
@@ -59,13 +60,13 @@ int read_input(char *buffer, char *client_pipe_name, char *box_name) {
 		return -1;
 	}
 
-	ssize_t scan_matches = sscanf(input, "sub %s %s %s %s", buffer, client_pipe_name, box_name, assert);
+	ssize_t scan_matches = sscanf(input, "sub %s %s %s %s", buffer, client_pipe_namepath, box_name, assert);
 	if (scan_matches != 3) {
 		return -1;
 	}
-	int client_pipe_len = strlen(client_pipe_name);
-	int box_name_len = strlen(box_name);
-	memset(client_pipe_name + client_pipe_len, '\0', MAX_CLIENTPIPE_NAME - client_pipe_len);    //FIXME check for error
+	size_t client_pipe_len = strlen(client_pipe_namepath);
+	size_t box_name_len = strlen(box_name);
+	memset(client_pipe_namepath + client_pipe_len, '\0', MAX_CLIENTPIPE_NAME - client_pipe_len);    //FIXME check for error
 	memset(box_name + box_name_len, '\0', MAX_BOX_NAME - box_name_len);    //FIXME check for error
 	// fills the names name with '\0'
 	return 0;

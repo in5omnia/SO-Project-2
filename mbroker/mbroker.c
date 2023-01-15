@@ -12,6 +12,7 @@
 #include <string.h>
 #include "request_handler.h"
 #include "box_list.h"
+#include <signal.h>
 
 char *register_pipe_name;
 int register_fifo;
@@ -21,8 +22,8 @@ pthread_mutex_t box_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 box_list_t *box_list = NULL;
 
 
-
 void exit_process(int sig) {
+	INFO("Exiting process, %d", sig);
 	if (box_list) {
 		box_list_destroy(box_list);
 	}
@@ -71,7 +72,7 @@ int read_input(char *buffer, int *max_sessions) {
 }
 
 
-void* worker_thread(void* session_id) {
+void *worker_thread(void *session_id) {
 	(void) session_id;
 	while (1) {
 

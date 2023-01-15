@@ -77,7 +77,7 @@ void handle_create_remove_box(char *register_pipe_name, client_pipe_path_t clien
 				"OK\n");
 	} else {
 		fprintf(stdout,
-				"ERROR %s\n", response.error_message); // INTERNAL HANDLE PANIC
+				"ERROR %s\n", response.error_message);
 	}
 }
 
@@ -101,7 +101,7 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 	do {
 		bytes = read(client_fd, &response, sizeof(list_boxes_response_t));
 		if (bytes == -1) {
-			PANIC("Failed to open register pipe");
+			PANIC("Failed to read on client pipe");
 		}
 
 		if (response.box_name[0] == '\0') {
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 	}
 	INFO("FIFO CREATED: %s", (char *) client_pipe_name);
 
-	// switch case between modes returned from read_input
+
 	switch (selected_mode) {
 		case MODE_CREATE:
 			INFO("Creating box");

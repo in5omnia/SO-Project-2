@@ -2,8 +2,6 @@
 #include "../protocol/codes.h"
 #include "../protocol/default_sizes.h"
 #include "../protocol/protocol.h"
-#include <sys/stat.h>
-#include <sys/errno.h>
 #include <sys/fcntl.h>
 #include "fifo.h"
 #include <signal.h>

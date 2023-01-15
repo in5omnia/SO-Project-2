@@ -1,6 +1,3 @@
-//
-// Created by Beatriz Gavilan on 14/01/2023.
-//
 
 #include "fifo.h"
 
@@ -13,10 +10,10 @@ int create_fifo(char *pipe_name) {
 }
 
 int start_fifo(char *pipe_name, int flag) {
-	int fifo = open(pipe_name, flag); // FIXME bc RDWR - n sei se tem de ser dif instancias
+	int fifo = open(pipe_name, flag);
 	if (fifo == -1)
 		PANIC("Failed to open fifo, Errno: %d",
-			  errno); // TODO: add error handling/Reason
+			  errno);
 
 	INFO("FIFO opened in %d: %s", flag, pipe_name);
 

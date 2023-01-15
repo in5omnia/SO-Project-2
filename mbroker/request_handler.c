@@ -1,6 +1,3 @@
-//
-// Created by Beatriz Gavilan on 15/01/2023.
-//
 
 #include "request_handler.h"
 #include "../protocol/codes.h"
@@ -60,7 +57,7 @@ void handle_publisher(request_t *request) {
 	box->n_publishers++;
 
 	int box_fhandle = tfs_open(request->box_name, TFS_O_APPEND);
-	int client_pipe = start_fifo(request->client_named_pipe_path, O_WRONLY);
+	int client_pipe = start_fifo(request->client_named_pipe_path, O_RDONLY);
 	message_t *message = (message_t *) malloc(sizeof(message_t));
 
 	while (box_lookup(request->box_name) != NULL) {    //while box exists

@@ -1,6 +1,3 @@
-//
-// Created by Beatriz Gavilan on 14/01/2023.
-//
 
 #ifndef PROJETO_SO_2_MANAGER_H
 #define PROJETO_SO_2_MANAGER_H

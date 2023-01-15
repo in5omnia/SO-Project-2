@@ -3,9 +3,6 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 
-//
-// Created by Beatriz Gavilan on 14/01/2023.
-//
 
 #include <string.h>
 #include "../protocol/codes.h"

@@ -37,7 +37,7 @@ void exit_process(int sig) {
 
 int init_fs() {
 	INFO("Starting up");
-	tfs_params params = tfs_default_params(); // TODO: maybe adjust accordingly
+	tfs_params params = tfs_default_params();
 	if (tfs_init(&params) != 0) {
 		PANIC("Failed to initialize filesystem");
 	}
@@ -94,14 +94,14 @@ pthread_t start_worker_thread(int session_id) {
 	return thread;
 }
 
-// TODO: Mbroker stops with SIGINT
+
 int main(int argc, char **argv) {
 	(void) argc;
 	(void) argv;
-	// how to  handle sigint
+
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGINT, exit_process);
-	// TODO: use args
+
 	char buffer[MAX_INPUT_SIZE];
 	int max_sessions;
 

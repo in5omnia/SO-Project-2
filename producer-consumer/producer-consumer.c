@@ -88,8 +88,8 @@ int pcq_destroy(pc_queue_t *queue){
 	pthread_mutex_destroy(&queue->pcq_popper_condvar_lock);
 	pthread_cond_destroy(&queue->pcq_pusher_condvar);
 	pthread_cond_destroy(&queue->pcq_popper_condvar);
-	int elem = queue->pcq_tail;
-	int size = queue->pcq_current_size;
+	size_t elem = queue->pcq_tail;
+	size_t size = queue->pcq_current_size;
 	for (int i=0; i < size; i++){
 		free(queue->pcq_buffer[elem]);
 		elem = (elem + 1) % queue->pcq_capacity;

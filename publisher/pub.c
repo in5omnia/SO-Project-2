@@ -21,7 +21,7 @@ void exit_process(){
 char *get_message() {
 	char *message = (char*)malloc(sizeof(char)*MAX_MESSAGE_SIZE);
 	//FIXME vai dar erro se a message for grande demais - tenho de a truncar e por o char 256 a \0 INTERNAL
-	ssize_t bytes_read = fread(message, sizeof(char), MAX_MESSAGE_SIZE, stdin);
+	size_t bytes_read = fread(message, sizeof(char), MAX_MESSAGE_SIZE, stdin);
 
 	if (bytes_read == MAX_MESSAGE_SIZE) {
 		if (feof(stdin)) {
@@ -32,7 +32,7 @@ char *get_message() {
 	}
 
 
-	int len = strlen(message);
+	size_t len = strlen(message);
 	if (message[len-1] == '\n') {	//replace newline
 		message[len-1] = '\0';
 	}
@@ -44,11 +44,11 @@ char *get_message() {
 }
 
 
-int publish_message(int client_pipe, char *message) {
+int publish_message(int client_pipe_fd, char *message) {
 	message_t *msg = (message_t*)malloc(sizeof(message_t));
 	msg->code = CODE_PUBLISHER_SEND_MSG;
 	memcpy(msg->message, message, MAX_MESSAGE_SIZE);
-	ssize_t byteswritten = write(client_pipe, msg, MAX_MESSAGE_SIZE);
+	ssize_t byteswritten = write(client_pipe_fd, msg, MAX_MESSAGE_SIZE);
 	if (byteswritten == -1) {
 		free(msg);
 		PANIC("Failed to write to FIFO");
@@ -59,7 +59,7 @@ int publish_message(int client_pipe, char *message) {
 }
 
 
-int read_input(char *buffer, char *client_pipe_name, char *box_name) {
+int read_input(char *buffer, char *client_pipe_namepath, char *box_name) {
 	char input[MAX_INPUT_SIZE];
 	char assert[MAX_INPUT_SIZE];
 	if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
@@ -70,13 +70,13 @@ int read_input(char *buffer, char *client_pipe_name, char *box_name) {
 		return -1;
 	}
 
-	ssize_t scan_matches = sscanf(input, "pub %s %s %s %s", buffer, client_pipe_name, box_name, assert);
+	ssize_t scan_matches = sscanf(input, "pub %s %s %s %s", buffer, client_pipe_namepath, box_name, assert);
 	if (scan_matches != 3) {
 		return -1;
 	}
-	int client_pipe_len = strlen(client_pipe_name);
-	int box_name_len = strlen(box_name);
-	memset(client_pipe_name + client_pipe_len, '\0', MAX_CLIENTPIPE_NAME - client_pipe_len);    //FIXME check for error
+	size_t client_pipe_len = strlen(client_pipe_namepath);
+	size_t box_name_len = strlen(box_name);
+	memset(client_pipe_namepath + client_pipe_len, '\0', MAX_CLIENTPIPE_NAME - client_pipe_len);    //FIXME check for error
 	memset(box_name + box_name_len, '\0', MAX_BOX_NAME - box_name_len);    //FIXME check for error
 	// fills the names name with '\0'
 	return 0;

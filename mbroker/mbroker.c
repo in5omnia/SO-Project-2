@@ -21,7 +21,8 @@ pthread_mutex_t box_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 box_list_t *box_list = NULL;
 
 
-int exit_process() {
+
+void exit_process(int sig) {
 	if (box_list) {
 		box_list_destroy(box_list);
 	}
@@ -97,8 +98,8 @@ int main(int argc, char **argv) {
 	(void) argc;
 	(void) argv;
 	// how to  handle sigint
+	signal(SIGPIPE, SIG_IGN);
 	signal(SIGINT, exit_process);
-
 	// TODO: use args
 	char buffer[MAX_INPUT_SIZE];
 	int max_sessions;

@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include "protocol_manager.h"
+#include "fifo.h"
 
 static void print_usage() {
 	fprintf(stderr, "usage: \n"
@@ -46,27 +47,30 @@ void handle_create_remove_box(char *register_pipe_name, client_pipe_path_t clien
 							  char box_name[MAX_BOX_NAME],
 							  code_t send_code) {
 	// create box
-	// make it so that every character in box name is \0
 	size_t len = strlen(box_name);
-	memset(box_name + len, '\0', MAX_BOX_NAME - len);    //FIXME check for error
-	// fills the rest of the box name with '\0'
+	memset(box_name + len, '\0', MAX_BOX_NAME - len);
 
 
 	create_remove_box_request_t request = build_create_remove_box_request(send_code, *client_pipe_name,
 																		  box_name);
 
-// send request
-	int fd = open(register_pipe_name, O_WRONLY); // INTERNAL CHECK IF THIS RETURNS -1
-	write(fd,
-		  &request, sizeof(request));
+	// send request
+	int fd = open(register_pipe_name, O_WRONLY);
+	if (fd == -1) {
+		PANIC("Failed to open register pipe");
+	}
+
+	write(fd, &request, sizeof(request));
 	INFO("Sent request to server");
 
-// read response on client pipe
+	// read response on client pipe
 	int client_fd = open(*client_pipe_name, O_RDONLY);
 	create_remove_box_response_t response;
-	read(client_fd,
-		 &response, sizeof(create_remove_box_response_t)); // INTERNAL HANDLE READ
-
+	ssize_t bytes = read(client_fd,
+		 &response, sizeof(create_remove_box_response_t));
+	if (bytes == -1) {
+		PANIC("Failed to open register pipe");
+	}
 
 	if (response.ret_code == 0) {
 		fprintf(stdout,
@@ -82,7 +86,7 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 	list_boxes_request_t request = build_list_boxes_request(*client_pipe_name);
 
 	// send request
-	int fd = open(register_pipe_name, O_WRONLY); // INTERNAL CHECK IF THIS RETURNS -1
+	int fd = start_fifo(register_pipe_name, O_WRONLY);
 	write(fd, &request, sizeof(request));
 	INFO("Sent request to server");
 	// INTERNAL SHOULD I CLOSE THE FD HERE?
@@ -92,7 +96,7 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 	list_boxes_response_t response;
 
 	do {
-		read(client_fd, &response, sizeof(list_boxes_response_t)); // INTERNAL HANDLE READ
+		ssize_t bytes = read(client_fd, &response, sizeof(list_boxes_response_t)); // INTERNAL HANDLE READ
 
 		if (response.box_name[0] == '\0') {
 			fprintf(stdout, "NO BOXES FOUND\n");

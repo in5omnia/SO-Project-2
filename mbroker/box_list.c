@@ -28,8 +28,10 @@ box_entry_t *box_entry_create(char box_name[MAX_BOX_NAME]) {
 // Creates a new box list
 void box_entry_destroy(box_entry_t *box_entry) {
 	// Destroy condvar and mutex
-	pthread_mutex_destroy(&box_entry->box_entry_condvar_lock); // INTERNAL HANDLE -1
-	pthread_cond_destroy(&box_entry->box_entry_condvar);
+	if (pthread_mutex_destroy(&box_entry->box_entry_condvar_lock) !=0 )
+		PANIC("Could not destroy box entry condvar lock");
+	if (pthread_cond_destroy(&box_entry->box_entry_condvar)!=0)
+		PANIC("Could not destroy box entry condvar");
 	free(box_entry);
 }
 
@@ -60,7 +62,7 @@ void box_list_remove(char box_name[MAX_BOX_NAME]) {
 			// Found box entry
 			if (prev == NULL) {
 				// First element of the list
-				box_list = curr->next; // INTERNAL WARNING BOX_LIST WILL BE NULL
+				box_list = curr->next;
 			} else {
 				prev->next = curr->next;
 			}
@@ -75,16 +77,26 @@ void box_list_remove(char box_name[MAX_BOX_NAME]) {
 
 
 box_entry_t *box_lookup(char box_name[MAX_BOX_NAME]) {
+	// check if path starts with '/'
+	char *new_pathname = (char*)malloc(MAX_BOX_NAME+1);
+	if (box_name[0] != '/') {
+		new_pathname[0] = '/';
+		memcpy(new_pathname + 1, box_name, MAX_BOX_NAME);
+	} else {
+		memcpy(new_pathname, box_name, MAX_BOX_NAME);
+	}
+
 	box_list_t *curr = box_list;
 	while (curr != NULL) {
-		if (!strcmp(curr->box_entry->box_name, box_name)) {
+		if (!strcmp(curr->box_entry->box_name, new_pathname)) {
 			// Found box entry
+			free(new_pathname);
 			return curr->box_entry;
 
 		}
 		curr = curr->next;
 	}
-
+	free(new_pathname);
 	return NULL;
 }
 

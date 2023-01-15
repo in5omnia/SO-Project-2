@@ -111,8 +111,6 @@ int main(int argc, char **argv) {
 		// FIXME should i delete fifo?
 		PANIC("Failed to send request to server");
 	}
-
-	//INTERNAL what if server rejects - no box example
 	free(register_pipe_name);
 	client_pipe = start_fifo(client_pipe_name, O_WRONLY);//FIXME check if it worked?
 	//threads sending messages?

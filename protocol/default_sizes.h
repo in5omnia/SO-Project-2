@@ -1,6 +1,3 @@
-//
-// Created by Eduardo Nazário on 13/01/2023.
-//
 #include <stdint.h>
 
 #ifndef PROJETO_SO_2_DEFAULT_SIZES_H

@@ -1,7 +1,3 @@
-//
-// Created by Beatriz Gavilan on 13/01/2023.
-//
-
 #ifndef PROJETO_SO_2_CODES_H
 #define PROJETO_SO_2_CODES_H
 

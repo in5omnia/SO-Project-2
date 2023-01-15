@@ -120,21 +120,22 @@ int main(int argc, char **argv) {
 	(void) argc;
 	(void) argv;
 
-	char register_pipe_name[MAX_REGISTER_PIPE_SIZE]; // INTERNAL it might need to be trimmed
-
+	char buffer[MAX_REGISTER_PIPE_SIZE];
 	char mode[MODE_BUFFER_SIZE];
 	char box_name[MAX_BOX_NAME];
 	client_pipe_path_t client_pipe_name;
 	INFO("Reading input");
-	int selected_mode = read_input(register_pipe_name, &client_pipe_name, mode, box_name);
+	int selected_mode = read_input(buffer, &client_pipe_name, mode, box_name);
 	while (selected_mode == -1) {
 		print_usage();
 		INFO("Reading input");
-		selected_mode = read_input(register_pipe_name, &client_pipe_name, mode, box_name);
+		selected_mode = read_input(buffer, &client_pipe_name, mode, box_name);
 	}
+	char *register_pipe_name = (char*) malloc(sizeof(char) * (strlen(buffer)+1));
+	strcpy(register_pipe_name, buffer);
 	INFO("Input read");
 
-	if (mkfifo((char *) client_pipe_name, 0666) == -1) { // FIXME 0666
+	if (mkfifo((char *) client_pipe_name, 0666) == -1) {
 		PANIC("Failed to create fifo, Errno: %d", errno);
 	}
 	INFO("FIFO CREATED: %s", (char *) client_pipe_name);
@@ -144,7 +145,7 @@ int main(int argc, char **argv) {
 		case MODE_CREATE:
 			INFO("Creating box");
 			handle_create_remove_box(register_pipe_name, &client_pipe_name, box_name, CODE_CREATE_MBOX);
-			break;    // INTERNAL CHECK RETURN CODES???????
+			break;
 		case MODE_REMOVE:
 			handle_create_remove_box(register_pipe_name, &client_pipe_name, box_name, CODE_REMOVE_MBOX);
 			break;
@@ -155,10 +156,8 @@ int main(int argc, char **argv) {
 			print_usage();
 	}
 
-	// INTERNAL CLOSE PIPE???? Unlink fifo
-
+	free(register_pipe_name);
 	unlink(client_pipe_name);
-
 	return 0;
 }
 

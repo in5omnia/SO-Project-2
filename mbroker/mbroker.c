@@ -20,18 +20,26 @@ pc_queue_t *pc_queue;
 
 pthread_mutex_t box_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 box_list_t *box_list = NULL;
-
+int max_sessions;
+pthread_t *threads;
 
 void exit_process(int sig) {
 	INFO("Exiting process, %d", sig);
 	if (box_list) {
 		box_list_destroy(box_list);
 	}
-	pthread_mutex_destroy(&box_list_mutex); // INTERNAL SHOULD THIS BE RW LOCK
+	if (pthread_mutex_destroy(&box_list_mutex)!=0) {
+		PANIC("Failed to destroy box list mutex");
+	}
 	pcq_destroy(pc_queue);
 	free(pc_queue);
-	close(register_fifo);
-	unlink(register_pipe_name);
+	if (close(register_fifo)!=0)
+		PANIC("Failed to close register fifo");
+	if (unlink(register_pipe_name)!=0)
+		PANIC("Failed to unlink register pipe");
+	for (int i=0; i<max_sessions; i++){
+		pthread_kill(threads[i], SIGKILL);
+	}
 	exit(0);
 }
 
@@ -57,14 +65,14 @@ int destroy_fs() {
 }
 
 
-int read_input(char *buffer, int *max_sessions) {
+int read_input(char *buffer) {
 	char input[MAX_INPUT_SIZE];
 	char assert[MAX_INPUT_SIZE];
 	if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
 		PANIC("Failed to read from stdin");
 		return -1;
 	}
-	ssize_t scan_matches = sscanf(input, "mbroker %s %d %s", buffer, max_sessions, assert);
+	ssize_t scan_matches = sscanf(input, "mbroker %s %d %s", buffer, &max_sessions, assert);
 	if (scan_matches != 2) {
 		return -1;
 	}
@@ -103,13 +111,12 @@ int main(int argc, char **argv) {
 	signal(SIGINT, exit_process);
 
 	char buffer[MAX_INPUT_SIZE];
-	int max_sessions;
 
 	INFO("Reading input");
-	int s = read_input(buffer, &max_sessions);
+	int s = read_input(buffer);
 	while (s == -1) {
 		fprintf(stderr, "usage: mbroker <register_pipe_name> <max_sessions>\n");
-		s = read_input(buffer, &max_sessions);
+		s = read_input(buffer);
 	}
 	INFO("Input read");
 
@@ -118,7 +125,7 @@ int main(int argc, char **argv) {
 		PANIC("Failed to allocate memory");
 	}
 
-	if (init_fs() != 0) { // INTERNAL This might not occur but it's a good practice to check
+	if (init_fs() != 0) { // This might not occur but it's good practice to check
 		PANIC("Failed to initialize filesystem");
 	}
 
@@ -129,25 +136,22 @@ int main(int argc, char **argv) {
 		PANIC("Failed to allocate memory");
 		return -1;
 	}
-	if (pcq_create(pc_queue, SESSION_CAPACITY * (size_t) max_sessions) == -1) { // FIXME replace with MAX CAPACITY
-		PANIC("Failed to allocate pc_queue");    // FIXME: this won't happen
+	if (pcq_create(pc_queue, SESSION_CAPACITY * (size_t) max_sessions) == -1) {
+		PANIC("Failed to allocate pc_queue");
 		return -1;
 	}
 	INFO("Created pc_queue");
 
 
 	// Start all worker threads
-	pthread_t *threads = malloc((size_t) max_sessions * sizeof(pthread_t));
+	threads = malloc((size_t) max_sessions * sizeof(pthread_t));
 	for (int i = 0; i < max_sessions; i++) {
 		threads[i] = start_worker_thread(i);
 	}
 
-
-
 	// Make Register FIFO
-
 	create_fifo(register_pipe_name);
-	register_fifo = start_fifo(register_pipe_name, O_RDWR); // INTERNAL is it RDWR?
+	register_fifo = start_fifo(register_pipe_name, O_RDWR);
 	INFO("Register fifo created: %s", register_pipe_name);
 
 	while (1) {

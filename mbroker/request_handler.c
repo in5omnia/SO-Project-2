@@ -46,13 +46,12 @@ int write_to_box(int box_fhandle, message_t *message, int client_pipe) {
 void handle_publisher(request_t *request) {
 	box_entry_t *box = box_lookup(request->box_name);
 	if (box == NULL) {
-		// TODO: REJECT INTERNAL
 		INFO("Box does not exist");
 		return;
 	}
 	if (box->n_publishers != 0) {
 		INFO("Box already has a publisher");
-		//TODO: INTERNAL wait?- check piaza
+		return;
 	}
 	box->n_publishers++;
 
@@ -73,9 +72,8 @@ void handle_publisher(request_t *request) {
 	}
 	// when the box is removed, the subscriber process will end
 	free(message);
-	close(client_pipe);
 	tfs_close(box_fhandle);
-	unlink(request->client_named_pipe_path);    //this is will generate SIGPIPE in publisher process
+	close(client_pipe);
 }
 
 
@@ -101,7 +99,17 @@ void handle_mbox_creation(request_t *request) {
 			// Accept
 			ret_code = (ret_code_t) 0;
 			strcpy(error, BOX_CREATION_SUCCESS);
-			box_list_insert(box_entry_create(request->box_name)); // INTERNAL SHOULD WE ASSURE THE NAME?
+			// check if path starts with '/'
+			if (request->box_name[0] != '/') {
+			 	char *new_pathname = (char*)malloc(MAX_BOX_NAME+1);
+				new_pathname[0] = '/';
+				memcpy(new_pathname + 1, request->box_name, MAX_BOX_NAME);
+			 	box_list_insert(box_entry_create(new_pathname));
+			 	free(new_pathname);
+			} else {
+			 	box_list_insert(box_entry_create(request->box_name));
+			}
+
 		}
 	}
 	// set all remaining bytes of error to \0

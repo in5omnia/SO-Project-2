@@ -7,9 +7,9 @@
 
 typedef struct box_entry_t {
 	char box_name[MAX_BOX_NAME];
-	int n_subscribers;
-	int n_publishers;
-	int box_size;
+	n_subscribers_t n_subscribers;
+	n_publishers_t n_publishers;
+	box_size_t box_size;
 	pthread_mutex_t box_entry_condvar_lock;
 	pthread_cond_t box_entry_condvar;
 } box_entry_t;

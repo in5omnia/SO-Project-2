@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <sys/fcntl.h>
-#include <signal.h>
 
 #include "fifo.h"
 

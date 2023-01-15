@@ -1,3 +1,6 @@
+#include "../protocol/codes.h"
+#include "../protocol/default_sizes.h"
+#include "../protocol/protocol.h"
 #include "logging.h"
 #include <sys/stat.h>
 #include <sys/errno.h>
@@ -82,9 +85,40 @@ int read_input(char *buffer, char *client_pipe_name, char *box_name) {
 
 
 int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-    fprintf(stderr, "usage: pub <register_pipe_name> <box_name>\n");
-    WARN("unimplemented"); // TODO: implement
-    return -1;
+	(void) argc;
+	(void) argv;
+
+
+	// TODO: use args
+	char buffer[MAX_INPUT_SIZE];
+	char box_name[MAX_BOX_NAME];
+
+	INFO("Reading input");
+	int s = read_input(buffer, client_pipe_name, box_name);
+	while (s == -1) {
+		fprintf(stderr, "usage: pub <register_pipe_name> <client_pipe_name> <box_name>\n");
+		s = read_input(buffer, client_pipe_name, box_name);
+	}
+	char *register_pipe_name = strdup(buffer);
+	if (register_pipe_name == NULL) {
+		PANIC("Failed to allocate memory");
+	}
+	INFO("Input read");
+
+	create_fifo(client_pipe_name);
+
+	client_request_t *request = create_client_request(CODE_REGISTER_PUBLISHER, client_pipe_name, box_name);
+	if (send_request_to_server(register_pipe_name, request) != 0) {
+		// FIXME should i delete fifo?
+		PANIC("Failed to send request to server");
+	}
+
+	//INTERNAL what if server rejects - no box example
+	free(register_pipe_name);
+	client_pipe = start_fifo(client_pipe_name, O_WRONLY);//FIXME check if it worked?
+	//threads sending messages?
+	while (1) {
+		publish_message(client_pipe, get_message());
+	}
+	return 0;
 }

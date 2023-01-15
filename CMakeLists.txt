@@ -44,3 +44,28 @@ add_executable(publisher
         protocol/protocol.h
         utils/fifo.h
         utils/fifo.c)
+
+
+add_executable(subscriber
+        subscriber/sub.c
+        utils/betterassert.h
+        utils/logging.c
+        utils/logging.h
+        protocol/default_sizes.h
+        protocol/codes.h
+        protocol/protocol.c
+        protocol/protocol.h
+        utils/fifo.h
+        utils/fifo.c)
+
+add_executable(manager
+        manager/manager.c
+        utils/betterassert.h
+        utils/logging.c
+        utils/logging.h
+        protocol/default_sizes.h
+        protocol/codes.h
+        protocol/protocol.c
+        protocol/protocol.h
+        manager/protocol_manager.c
+        manager/protocol_manager.h)

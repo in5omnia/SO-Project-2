@@ -11,9 +11,11 @@
 
 #define END_MESSAGE '\0'
 
+#define DEFAULT_BLOCK_SIZE 1024
 #define MAX_CLIENTPIPE_NAME 256
+#define SESSION_CAPACITY 40
 #define MAX_BOX_NAME 32
-
+#define MAX_INPUT_SIZE 1024
 #define MAX_MESSAGE_SIZE 1024
 #define MAX_ERRORMESSAGE_SIZE 1024
 
@@ -27,5 +29,4 @@ typedef char error_message_t[MAX_ERRORMESSAGE_SIZE];
 typedef char client_pipe_path_t[MAX_CLIENTPIPE_NAME];
 typedef char box_name_t[MAX_BOX_NAME];
 
-
-#endif //PROJETO_SO_2_DEFAULT_SIZES_H
+#endif // PROJETO_SO_2_DEFAULT_SIZES_H

@@ -10,10 +10,10 @@
 #include "protocol_manager.h"
 
 static void print_usage() {
-    fprintf(stderr, "usage: \n"
-                    "   manager <register_pipe_name> create <box_name>\n"
-                    "   manager <register_pipe_name> remove <box_name>\n"
-                    "   manager <register_pipe_name> list\n");
+	fprintf(stderr, "usage: \n"
+					"   manager <register_pipe_name> <pipe_name> create <box_name>\n"
+					"   manager <register_pipe_name> <pipe_name> remove <box_name>\n"
+					"   manager <register_pipe_name> <pipe_name> list\n");
 }
 
 int read_input(char *register_pipe_name, client_pipe_path_t *client_pipe_name, char *mode, char *box_name) {
@@ -106,11 +106,52 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 
 
 int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-    print_usage();
-    WARN("unimplemented"); // TODO: implement
-    return -1;
+	(void) argc;
+	(void) argv;
+
+	char register_pipe_name[1024]; // INTERNAL it might need to be trimmed
+	char mode[MODE_BUFFER_SIZE];
+	char box_name[MAX_BOX_NAME];
+	client_pipe_path_t *client_pipe_name = malloc(sizeof(client_pipe_path_t));
+	INFO("Reading input");
+	int selected_mode = read_input(register_pipe_name, client_pipe_name, mode, box_name);
+	while (selected_mode == -1) {
+		print_usage();
+		INFO("Reading input");
+		selected_mode = read_input(register_pipe_name, client_pipe_name, mode, box_name);
+	}
+	INFO("Input read");
+
+	if (mkfifo((char *) client_pipe_name, 0666) == -1) { // FIXME 0666
+		PANIC("Failed to create fifo, Errno: %d", errno);
+	}
+	INFO("FIFO CREATED: %s", (char *) client_pipe_name);
+
+	// switch case between modes returned from read_input
+	switch (selected_mode) {
+		case MODE_CREATE:
+			INFO("Creating box");
+			handle_create_remove_box(register_pipe_name, client_pipe_name, box_name, CODE_CREATE_MBOX);
+			break;    // INTERNAL CHECK RETURN CODES???????
+		case MODE_REMOVE:
+			handle_create_remove_box(register_pipe_name, client_pipe_name, box_name, CODE_REMOVE_MBOX);
+			break;
+		case MODE_LIST:
+			handle_list_boxes(register_pipe_name, client_pipe_name);
+			break;
+		default:
+			print_usage();
+	}
+
+	// INTERNAL CLOSE PIPE???? Unlink fifo
+	free(client_pipe_name);
+
+	return 0;
 }
 
-//criação e remoção da caixa
+
+
+
+
+
+// criação e remoção da caixa

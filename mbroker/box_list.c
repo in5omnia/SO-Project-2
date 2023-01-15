@@ -4,6 +4,8 @@
 #include "box_list.h"
 
 
+extern box_list_t *box_list;	//head of the box list
+
 // Creates a new box entry
 box_entry_t *box_entry_create(char box_name[MAX_BOX_NAME]) {
 	box_entry_t *new_box = (box_entry_t *) malloc(sizeof(box_entry_t));
@@ -40,12 +42,12 @@ void box_list_insert(box_entry_t *box_entry) {
 		return;
 	}
 	new_head->box_entry = box_entry;
-	if (head) {
-		new_head->next = head;
+	if (box_list) {
+		new_head->next = box_list;
 	} else {
 		new_head->next = NULL;
 	}
-
+	box_list = new_head;
 }
 
 // Removes a box entry from the box list

@@ -76,7 +76,7 @@ void worker_thread(void* session_id) {
 
 		request_t *request = (request_t *) pcq_dequeue(pc_queue);
 
-		handle_request(request, box_list);
+		handle_request(request);
 
 		free(request);
 	}

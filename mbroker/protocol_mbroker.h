@@ -1,8 +1,8 @@
 #ifndef PROJETO_SO_2_PROTOCOL_MBROKER_H
 #define PROJETO_SO_2_PROTOCOL_MBROKER_H
 
-#import "../protocol/codes.h"
-#import "../protocol/default_sizes.h"
+#include "../protocol/codes.h"
+#include "../protocol/default_sizes.h"
 
 typedef struct __attribute__((__packed__)) request {
   code_t code;

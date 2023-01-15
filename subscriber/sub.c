@@ -13,6 +13,7 @@ int num_messages = 0;
 int client_pipe;
 
 void exit_process(int sig){
+	INFO("Exiting subscriber process %d", sig);
 	size_t bytes = fwrite(&num_messages, sizeof(int), 1, stdout);
 	if (bytes != MAX_MESSAGE_SIZE) {
 		PANIC("Failed to write to stdout");

@@ -203,7 +203,7 @@ void handle_mbox_removal(request_t *request) {
 
 char *get_each_message(const char *buffer, int size) {
 	// get the length of the destination string
-	char *message = (char *) malloc(sizeof(char) * (size));
+	char *message = (char *) malloc(sizeof(char) * (size_t) (size));
 	if (message == NULL) {
 		printf("malloc failed");
 		return NULL;
@@ -223,7 +223,7 @@ char *get_each_message(const char *buffer, int size) {
 int read_from_box(int box_fhandle, char *buffer, int client_pipe) {
 
 	tfs_read(box_fhandle, buffer, sizeof(client_pipe_path_t));
-	int block_size = strlen(buffer);
+	int block_size = (int) strlen(buffer);
 	char *temp = buffer;
 	for (int i = 0; i < block_size; i += MAX_MESSAGE_SIZE) {
 		message_t *message = (message_t *) malloc(sizeof(message_t));

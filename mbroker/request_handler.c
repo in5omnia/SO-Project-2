@@ -227,7 +227,7 @@ char *get_each_message(const char *buffer, int size) {
 
 int read_from_box(int box_fhandle, char *buffer, int client_pipe) {
 
-	tfs_read(box_fhandle, buffer, sizeof(client_pipe_path_t));
+	tfs_read(box_fhandle, buffer, MAX_MESSAGE_SIZE);
 	int block_size = (int) strlen(buffer);
 	char *temp = buffer;
 	for (int i = 0; i < block_size; i += MAX_MESSAGE_SIZE) {
@@ -259,6 +259,8 @@ void handle_subscriber(request_t *request) {
 	char buffer[DEFAULT_BLOCK_SIZE];
 	int client_pipe = start_fifo(request->client_named_pipe_path, O_WRONLY);
 
+	// read to the end of the box splitting at '\0'
+	//read_from_box(box_fhandle, buffer, client_pipe);
 	pthread_mutex_lock(&box->box_entry_condvar_lock);
 	while (box_lookup(request->box_name) != NULL) {
 		//its always reading bc publishers can publish more	FIXME

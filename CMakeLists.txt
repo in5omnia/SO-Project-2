@@ -30,8 +30,8 @@ add_executable(mbroker
         mbroker/box_list.c
         producer-consumer/producer-consumer.h
         producer-consumer/producer-consumer.c
-        manager/protocol_manager.c
-        manager/protocol_manager.h)
+        protocol/protocol.c
+        protocol/protocol.h)
 
 add_executable(publisher
         publisher/pub.c

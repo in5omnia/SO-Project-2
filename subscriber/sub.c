@@ -13,7 +13,7 @@ int client_pipe;
 void exit_process(int sig){
 	INFO("Exiting subscriber process %d", sig);
 	size_t bytes = fwrite(&num_messages, sizeof(int), 1, stdout);
-	if (bytes != MAX_MESSAGE_SIZE) {
+	if (bytes == -1) {
 		PANIC("Failed to write to stdout");
 	}
 	close(client_pipe);
@@ -24,7 +24,7 @@ void exit_process(int sig){
 
 void print_message(char* message){
 	int bytes = fprintf(stdout, "%s\n", message);
-	if (bytes != MAX_MESSAGE_SIZE) {	// FIXME: or message len?
+	if (bytes == -1) {	// FIXME: or message len?
 		PANIC("Failed to write to stdout");
 	}
 }
@@ -36,11 +36,11 @@ int receive_messages(int fifo){
 		PANIC("Failed to read from FIFO");
 		return -1;
 	}
-	if (bytes_read == 0){	//end of file
+	/*if (bytes_read == 0){	//end of file
 		// writin end of pipe has been closed - subscriber process must end
 		exit_process(0);
 		return -1;
-	}
+	}*/
 	else {
 		num_messages++;
 		print_message(message->message);
@@ -56,7 +56,6 @@ int read_input(char *buffer, char *client_pipe_namepath, char *box_name) {
 	char assert[MAX_INPUT_SIZE];
 	if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
 		PANIC("Failed to read from stdin");
-		return -1;
 	}
 
 	ssize_t scan_matches = sscanf(input, "sub %s %s %s %s", buffer, client_pipe_namepath, box_name, assert);

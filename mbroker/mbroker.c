@@ -44,6 +44,27 @@ int making_fifo(char *pipe_name) {
 }
 
 
+void worker_thread(void* session_id) {
+    INFO("Worker thread %d started", (int) session_id);
+	while (1) {
+
+		request_t *request = (request_t *) pcq_dequeue(pc_queue);
+
+		handle_request(request, box_list);
+
+		free(request);
+	}
+
+
+}
+
+pthread_t start_worker_thread(int session_id) {
+	pthread_t thread;
+	if (pthread_create(&thread, NULL, worker_thread, session_id) != 0) {
+		PANIC("Failed to create thread");
+	}
+	return thread;
+}
 
 // TODO: Mbroker stops with SIGINT
 int main(int argc, char **argv) {

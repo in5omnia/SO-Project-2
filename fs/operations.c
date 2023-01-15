@@ -76,6 +76,19 @@ static int tfs_lookup(char const *name, inode_t const *root_inode) {
     return find_in_dir(root_inode, name);
 }
 
+// Assures path starts with '\' if not it will add it
+char *assure_pathname(char const *pathname) {
+	char *new_pathname = malloc(strlen(pathname) + 1);
+	if (pathname[0] != '/') {
+		new_pathname[0] = '/';
+		strcpy(new_pathname + 1, pathname);
+	} else {
+		strcpy(new_pathname, pathname);
+	}
+	return new_pathname;
+}
+
+
 int tfs_open(char const *name, tfs_file_mode_t mode) {
     if (pthread_mutex_lock(&g_library_mutex) == -1) {
         WARN("failed to lock mutex: %s", strerror(errno));

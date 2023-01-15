@@ -41,6 +41,11 @@ typedef enum {
     TFS_O_APPEND = 0b100,
 } tfs_file_mode_t;
 
+/*
+ * Assures pathname starts with '/'
+ */
+char* assure_pathname(char const *pathname);
+
 /**
  * Open a file.
  *

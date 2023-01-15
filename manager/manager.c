@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
-#include "protocol_manager.h"
+#include "../protocol/protocol.h"
 #include "fifo.h"
 
 static void print_usage() {
@@ -69,7 +69,7 @@ void handle_create_remove_box(char *register_pipe_name, client_pipe_path_t clien
 	ssize_t bytes = read(client_fd,
 		 &response, sizeof(create_remove_box_response_t));
 	if (bytes == -1) {
-		PANIC("Failed to open register pipe");
+		PANIC("Failed to read from client pipe");
 	}
 
 	if (response.ret_code == 0) {
@@ -87,16 +87,22 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 
 	// send request
 	int fd = start_fifo(register_pipe_name, O_WRONLY);
-	write(fd, &request, sizeof(request));
+	ssize_t bytes = write(fd, &request, sizeof(request));
+	if (bytes == -1) {
+		PANIC("Failed to write to register pipe");
+	}
 	INFO("Sent request to server");
-	// INTERNAL SHOULD I CLOSE THE FD HERE?
+	close(fd);
 
 	// read response on client pipe
-	int client_fd = open(*client_pipe_name, O_RDONLY);
+	int client_fd = start_fifo(*client_pipe_name, O_RDONLY);
 	list_boxes_response_t response;
 
 	do {
-		ssize_t bytes = read(client_fd, &response, sizeof(list_boxes_response_t)); // INTERNAL HANDLE READ
+		bytes = read(client_fd, &response, sizeof(list_boxes_response_t));
+		if (bytes == -1) {
+			PANIC("Failed to open register pipe");
+		}
 
 		if (response.box_name[0] == '\0') {
 			fprintf(stdout, "NO BOXES FOUND\n");
@@ -106,6 +112,7 @@ void handle_list_boxes(char *register_pipe_name, client_pipe_path_t *client_pipe
 					(size_t) response.n_subscribers);
 		}
 	} while (response.last == 0);
+	close(client_fd);
 }
 
 
@@ -113,16 +120,17 @@ int main(int argc, char **argv) {
 	(void) argc;
 	(void) argv;
 
-	char register_pipe_name[1024]; // INTERNAL it might need to be trimmed
+	char register_pipe_name[MAX_REGISTER_PIPE_SIZE]; // INTERNAL it might need to be trimmed
+
 	char mode[MODE_BUFFER_SIZE];
 	char box_name[MAX_BOX_NAME];
-	client_pipe_path_t *client_pipe_name = malloc(sizeof(client_pipe_path_t));
+	client_pipe_path_t client_pipe_name;
 	INFO("Reading input");
-	int selected_mode = read_input(register_pipe_name, client_pipe_name, mode, box_name);
+	int selected_mode = read_input(register_pipe_name, &client_pipe_name, mode, box_name);
 	while (selected_mode == -1) {
 		print_usage();
 		INFO("Reading input");
-		selected_mode = read_input(register_pipe_name, client_pipe_name, mode, box_name);
+		selected_mode = read_input(register_pipe_name, &client_pipe_name, mode, box_name);
 	}
 	INFO("Input read");
 
@@ -135,20 +143,21 @@ int main(int argc, char **argv) {
 	switch (selected_mode) {
 		case MODE_CREATE:
 			INFO("Creating box");
-			handle_create_remove_box(register_pipe_name, client_pipe_name, box_name, CODE_CREATE_MBOX);
+			handle_create_remove_box(register_pipe_name, &client_pipe_name, box_name, CODE_CREATE_MBOX);
 			break;    // INTERNAL CHECK RETURN CODES???????
 		case MODE_REMOVE:
-			handle_create_remove_box(register_pipe_name, client_pipe_name, box_name, CODE_REMOVE_MBOX);
+			handle_create_remove_box(register_pipe_name, &client_pipe_name, box_name, CODE_REMOVE_MBOX);
 			break;
 		case MODE_LIST:
-			handle_list_boxes(register_pipe_name, client_pipe_name);
+			handle_list_boxes(register_pipe_name, &client_pipe_name);
 			break;
 		default:
 			print_usage();
 	}
 
 	// INTERNAL CLOSE PIPE???? Unlink fifo
-	free(client_pipe_name);
+
+	unlink(client_pipe_name);
 
 	return 0;
 }

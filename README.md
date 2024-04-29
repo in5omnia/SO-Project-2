@@ -1,5 +1,5 @@
-# projeto-so-2022-23
+## Operating Systems Project - Delivery 2
 
-Código fornecido para o segundo exercício do projeto de Sistemas Operativos do ano letivo 2022-2023.
+Using the base code given, we built a simple message publishing and subscription system, where messages are stored in the TecnicoFS file system. The system has an autonomous server process to which different client processes can connect to publish or receive messages in a given message storage box.
 
-Consultar o [enunciado do projeto](https://github.com/tecnico-so/enunciado-proj-so-2022-23).
+See [Project Statement](https://github.com/tecnico-so/enunciado-proj-so-2022-23).
